@@ -19,12 +19,10 @@ export default function Home() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await propertyService.getProperties({
-        page: 1,
-        limit: 20,
+      const data = await propertyService.getProperties({
         // TODO: Filter by category when backend supports it
       })
-      setProperties(response.properties)
+      setProperties(data)
     } catch (err: any) {
       setError(err.message || 'Failed to load properties')
     } finally {

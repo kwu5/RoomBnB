@@ -1,0 +1,95 @@
+### Frontend Property API Tests
+### Base URL
+@baseUrl = http://localhost:5000/api
+@token = YOUR_TOKEN_HERE
+
+### 1. Get All Properties
+GET {{baseUrl}}/properties
+Content-Type: application/json
+
+### 2. Get Properties with Filters
+GET {{baseUrl}}/properties?city=New York&minPrice=100&maxPrice=500
+Content-Type: application/json
+
+### 3. Search Properties
+GET {{baseUrl}}/properties?search=luxury
+Content-Type: application/json
+
+### 4. Get Property by ID
+@propertyId = YOUR_PROPERTY_ID_HERE
+GET {{baseUrl}}/properties/{{propertyId}}
+Content-Type: application/json
+
+### 5. Create Property (Host Only)
+# First, register and login as a host to get a token
+POST {{baseUrl}}/properties
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Luxury Beach House",
+  "description": "Beautiful beachfront property with stunning ocean views",
+  "pricePerNight": 350,
+  "cleaningFee": 75,
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "maxGuests": 6,
+  "address": "456 Ocean Drive",
+  "city": "Miami",
+  "country": "USA",
+  "latitude": 25.7617,
+  "longitude": -80.1918,
+  "amenities": ["WiFi", "Pool", "Beach Access", "Kitchen", "Parking"],
+  "propertyType": "House",
+  "images": [
+    "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2",
+    "https://images.unsplash.com/photo-1502672260066-6bc05c107db4"
+  ]
+}
+
+### 6. Update Property (Owner Only)
+PUT {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Luxury Beach House",
+  "pricePerNight": 400
+}
+
+### 7. Delete Property (Owner Only)
+DELETE {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{token}}
+
+### 8. Get My Listings (Host Only)
+GET {{baseUrl}}/properties/my-listings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### ===== AUTHENTICATION FLOW =====
+
+### Register as Host
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "host-test@example.com",
+  "password": "HostPass123",
+  "firstName": "Test",
+  "lastName": "Host",
+  "isHost": true
+}
+
+### Login as Host
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "host-test@example.com",
+  "password": "HostPass123"
+}
+
+### Get Current User
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+Content-Type: application/json

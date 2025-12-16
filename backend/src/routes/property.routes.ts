@@ -7,7 +7,7 @@ const router = Router();
 const propertyController = new PropertyController();
 
 router.get('/', propertyController.getAllProperties);
-router.get('/host/properties', authenticate, requireHost, propertyController.getHostProperties);
+router.get('/my-listings', authenticate, requireHost, propertyController.getHostProperties);
 router.get('/:id', propertyController.getPropertyById);
 router.post(
   '/',

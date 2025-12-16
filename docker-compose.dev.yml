@@ -61,7 +61,7 @@ services:
     container_name: roombnb-frontend-dev
     restart: unless-stopped
     environment:
-      - VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=http://localhost:5000/api
     volumes:
       # Mount source code for hot reload
       - ./frontend/src:/app/src:delegated

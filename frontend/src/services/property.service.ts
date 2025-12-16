@@ -10,8 +10,8 @@ export const propertyService = {
   // Get all properties with search/filter
   getProperties: async (
     params?: PropertySearchParams
-  ): Promise<PropertySearchResponse> => {
-    const response = await api.get<ApiResponse<PropertySearchResponse>>(
+  ): Promise<Property[]> => {
+    const response = await api.get<ApiResponse<Property[]>>(
       '/properties',
       { params }
     )

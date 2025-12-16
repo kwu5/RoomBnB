@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
-import { propertyService } from '@/services'
+import { propertyService, bookingService } from '@/services'
 import { useAuth } from '@/store'
 import type { Property } from '@/types'
 import { formatCurrency, formatRating, calculateNights } from '@/utils'
+import { isCheckOutAfterCheckIn, isDateInFuture } from '@/utils/validation'
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>()
@@ -19,6 +20,9 @@ export default function PropertyDetail() {
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [bookingSuccess, setBookingSuccess] = useState(false)
 
   useEffect(() => {
     if (id) {
@@ -39,13 +43,47 @@ export default function PropertyDetail() {
     }
   }
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
-    // TODO: Implement booking functionality
-    console.log('Book:', { checkIn, checkOut, guests })
+
+    if (!property || !id) return
+
+    // Validate dates
+    if (!isDateInFuture(checkIn)) {
+      setBookingError('Check-in date must be in the future')
+      return
+    }
+
+    if (!isCheckOutAfterCheckIn(checkIn, checkOut)) {
+      setBookingError('Check-out must be after check-in')
+      return
+    }
+
+    setBookingLoading(true)
+    setBookingError(null)
+
+    try {
+      await bookingService.createBooking({
+        propertyId: id,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        numberOfGuests: guests,
+      })
+
+      setBookingSuccess(true)
+
+      // Redirect to bookings page after 2 seconds
+      setTimeout(() => {
+        navigate('/')
+      }, 2000)
+    } catch (err: any) {
+      setBookingError(err.message || 'Failed to create booking')
+    } finally {
+      setBookingLoading(false)
+    }
   }
 
   const calculateTotal = () => {
@@ -241,11 +279,32 @@ export default function PropertyDetail() {
 
               <button
                 onClick={handleBooking}
-                disabled={!checkIn || !checkOut}
+                disabled={!checkIn || !checkOut || bookingLoading || bookingSuccess}
                 className="w-full bg-[#FF385C] text-white py-3 rounded-lg font-semibold hover:bg-[#E31C5F] transition disabled:opacity-50 disabled:cursor-not-allowed mb-4"
               >
-                {isAuthenticated ? 'Reserve' : 'Log in to book'}
+                {bookingLoading ? 'Processing...' : bookingSuccess ? 'Booking confirmed!' : isAuthenticated ? 'Reserve' : 'Log in to book'}
               </button>
+
+              {/* Booking Success Message */}
+              {bookingSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+                  <p className="font-semibold flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Booking confirmed!
+                  </p>
+                  <p className="text-sm mt-1">Redirecting to home page...</p>
+                </div>
+              )}
+
+              {/* Booking Error Message */}
+              {bookingError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                  <p className="font-semibold">Booking failed</p>
+                  <p className="text-sm mt-1">{bookingError}</p>
+                </div>
+              )}
 
               {checkIn && checkOut && (
                 <div className="space-y-2 pt-4 border-t border-gray-200">

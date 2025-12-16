@@ -125,9 +125,13 @@ export default function Navbar() {
                         </p>
                         <p className="text-sm text-gray-500">{user?.email}</p>
                       </div>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
+                      <Link
+                        to="/my-bookings"
+                        className="block px-4 py-2 hover:bg-gray-50 transition"
+                        onClick={() => setShowUserMenu(false)}
+                      >
                         My Trips
-                      </button>
+                      </Link>
                       <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
                         Wishlists
                       </button>
