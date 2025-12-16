@@ -1,0 +1,128 @@
+### RoomBnB Booking API Tests
+### Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:5000/api
+@guestToken =
+@hostToken =
+@propertyId =
+@bookingId =
+
+### Setup: Need a guest user and a property to book
+
+### 0a. Register as Guest
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "guest@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Guest"
+}
+
+### 0b. Login as Guest
+# @name guestLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "guest@example.com",
+  "password": "password123"
+}
+
+### 0c. Login as Host (to view host bookings)
+# @name hostLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "host@example.com",
+  "password": "password123"
+}
+
+### 1. Create Booking (Success)
+# @name createBooking
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2025-12-20T00:00:00.000Z",
+  "checkOut": "2025-12-25T00:00:00.000Z",
+  "numberOfGuests": 2,
+  "specialRequests": "Late check-in please"
+}
+
+### 2. Create Booking (No Auth - Should Fail)
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2025-12-20T00:00:00.000Z",
+  "checkOut": "2025-12-25T00:00:00.000Z",
+  "numberOfGuests": 2
+}
+
+### 3. Create Booking (Invalid Dates - Check-out before Check-in)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2025-12-25T00:00:00.000Z",
+  "checkOut": "2025-12-20T00:00:00.000Z",
+  "numberOfGuests": 2
+}
+
+### 4. Create Booking (Too Many Guests)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2025-12-26T00:00:00.000Z",
+  "checkOut": "2025-12-28T00:00:00.000Z",
+  "numberOfGuests": 100
+}
+
+### 5. Create Booking (Conflicting Dates)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "propertyId": "{{propertyId}}",
+  "checkIn": "2025-12-22T00:00:00.000Z",
+  "checkOut": "2025-12-27T00:00:00.000Z",
+  "numberOfGuests": 2
+}
+
+### 6. Get Guest's Bookings
+GET {{baseUrl}}/bookings/guest
+Authorization: Bearer {{guestToken}}
+
+### 7. Get Host's Bookings
+GET {{baseUrl}}/bookings/host
+Authorization: Bearer {{hostToken}}
+
+### 8. Get Booking by ID
+GET {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{guestToken}}
+
+### 9. Get Booking by ID (Without Auth - Should Fail)
+GET {{baseUrl}}/bookings/{{bookingId}}
+
+### 10. Cancel Booking
+PUT {{baseUrl}}/bookings/{{bookingId}}/cancel
+Authorization: Bearer {{guestToken}}
+
+### 11. Cancel Booking (Without Auth - Should Fail)
+PUT {{baseUrl}}/bookings/{{bookingId}}/cancel
+
+### 12. Cancel Already Cancelled Booking (Should Fail)
+PUT {{baseUrl}}/bookings/{{bookingId}}/cancel
+Authorization: Bearer {{guestToken}}

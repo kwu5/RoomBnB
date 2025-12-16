@@ -19,6 +19,7 @@ export interface RegisterDto {
   firstName: string;
   lastName: string;
   phone?: string;
+  isHost?: boolean;
 }
 
 export interface CreatePropertyDto {

@@ -23,6 +23,7 @@ export class AuthService {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
+        isHost: data.isHost || false,
       },
       select: {
         id: true,
