@@ -28,6 +28,7 @@ model User {
   reviews         Review[]
   sentMessages    Message[]  @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+  favorites       Favorite[]
 
   @@map("users")
 }
@@ -58,6 +59,7 @@ model Property {
   host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
   bookings Booking[]
   reviews  Review[]
+  favorites Favorite[]
 
   @@map("properties")
 }
@@ -117,4 +119,19 @@ model Message {
   @@map("messages")
   @@index([conversationId])
   @@index([senderId, receiverId])
+}
+
+model Favorite {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+
+  userId        String
+  propertyId      String
+
+  user          User          @relation(fields:[userId], references:[id],onDelete: Cascade)
+  property      Property      @relation(fields:[propertyId],references:[id],onDelete:Cascade)
+  
+
+  @@unique([userId,propertyId])
+  @@map("favorites")
 }
