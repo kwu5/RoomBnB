@@ -4,6 +4,10 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import PropertyDetail from '@/pages/PropertyDetail'
 import MyBookings from '@/pages/MyBookings'
+import CreateProperty from '@/pages/CreateProperty'
+import MyListings from '@/pages/MyListings'
+import EditProperty from '@/pages/EditProperty'
+import Profile from '@/pages/Profile'
 
 function App() {
   return (
@@ -13,6 +17,10 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/properties/:id" element={<PropertyDetail />} />
       <Route path="/my-bookings" element={<MyBookings />} />
+      <Route path="/my-listings" element={<MyListings />} />
+      <Route path="/create-property" element={<CreateProperty />} />
+      <Route path="/edit-property/:id" element={<EditProperty />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   )
 }

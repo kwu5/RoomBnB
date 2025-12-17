@@ -202,14 +202,14 @@ export interface Category {
 }
 
 export const PROPERTY_CATEGORIES: Category[] = [
-  { id: 'beach', name: 'Beach', icon: '🏖️', description: 'Beachfront properties' },
-  { id: 'mountains', name: 'Mountains', icon: '⛰️', description: 'Mountain retreats' },
-  { id: 'city', name: 'City', icon: '🏙️', description: 'Urban stays' },
-  { id: 'countryside', name: 'Countryside', icon: '🌾', description: 'Rural getaways' },
-  { id: 'lakefront', name: 'Lakefront', icon: '🏞️', description: 'Lake properties' },
-  { id: 'trending', name: 'Trending', icon: '🔥', description: 'Popular now' },
-  { id: 'cabins', name: 'Cabins', icon: '🏕️', description: 'Cozy cabins' },
-  { id: 'luxury', name: 'Luxury', icon: '💎', description: 'Luxury properties' },
+  { id: '', name: 'All', icon: '🏠', description: 'All properties' },
+  { id: 'APARTMENT', name: 'Apartments', icon: '🏢', description: 'City apartments' },
+  { id: 'HOUSE', name: 'Houses', icon: '🏡', description: 'Entire houses' },
+  { id: 'VILLA', name: 'Villas', icon: '🏰', description: 'Luxury villas' },
+  { id: 'CABIN', name: 'Cabins', icon: '🏕️', description: 'Cozy cabins' },
+  { id: 'COTTAGE', name: 'Cottages', icon: '🏘️', description: 'Charming cottages' },
+  { id: 'LOFT', name: 'Lofts', icon: '🏙️', description: 'Modern lofts' },
+  { id: 'TOWNHOUSE', name: 'Townhouses', icon: '🏢', description: 'Urban townhouses' },
 ]
 
 export const AMENITIES = [

@@ -2,26 +2,34 @@ import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import Categories from '@/components/Categories'
 import PropertyCard from '@/components/PropertyCard'
+import SearchModal from '@/components/SearchModal'
 import { propertyService } from '@/services'
-import type { Property } from '@/types'
+import type { Property, PropertySearchParams } from '@/types'
 
 export default function Home() {
   const [properties, setProperties] = useState<Property[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [searchParams, setSearchParams] = useState<PropertySearchParams>({})
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
 
   useEffect(() => {
     fetchProperties()
-  }, [selectedCategory])
+  }, [selectedCategory, searchParams])
 
   const fetchProperties = async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await propertyService.getProperties({
-        // TODO: Filter by category when backend supports it
-      })
+      const params: PropertySearchParams = { ...searchParams }
+
+      // Filter by property type if category is selected
+      if (selectedCategory) {
+        params.propertyType = selectedCategory as any
+      }
+
+      const data = await propertyService.getProperties(params)
       setProperties(data)
     } catch (err: any) {
       setError(err.message || 'Failed to load properties')
@@ -30,9 +38,20 @@ export default function Home() {
     }
   }
 
+  const handleSearch = (params: PropertySearchParams) => {
+    setSearchParams(params)
+    setSelectedCategory('') // Reset category when searching
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      <Navbar onOpenSearch={() => setIsSearchModalOpen(true)} />
+
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSearch={handleSearch}
+      />
 
       <div className="pt-20">
         <Categories

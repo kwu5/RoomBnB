@@ -10,6 +10,7 @@ export class PropertyController {
       const filters = {
         city: req.query.city as string,
         country: req.query.country as string,
+        propertyType: req.query.propertyType as string,
         minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
         maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
         bedrooms: req.query.bedrooms ? Number(req.query.bedrooms) : undefined,

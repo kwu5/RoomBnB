@@ -1,12 +1,16 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/store'
-import { getInitials } from '@/utils'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/store";
+import { getInitials } from "@/utils";
 
-export default function Navbar() {
-  const navigate = useNavigate()
-  const { user, isAuthenticated, logout } = useAuth()
-  const [showUserMenu, setShowUserMenu] = useState(false)
+interface NavbarProps {
+  onOpenSearch?: () => void
+}
+
+export default function Navbar({ onOpenSearch }: NavbarProps = {}) {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
       <div className="max-w-[2520px] mx-auto px-4 sm:px-6 lg:px-20">
@@ -29,7 +33,10 @@ export default function Navbar() {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden md:flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md transition cursor-pointer">
+          <button
+            onClick={onOpenSearch}
+            className="hidden md:flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md transition cursor-pointer"
+          >
             <div className="px-6 py-2 border-r border-gray-300">
               <div className="text-sm font-semibold">Anywhere</div>
             </div>
@@ -54,11 +61,14 @@ export default function Navbar() {
                 </svg>
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Right Menu */}
           <div className="flex items-center gap-4">
-            <button className="hidden lg:block text-sm font-semibold hover:bg-gray-100 px-4 py-3 rounded-full transition">
+            <button
+              onClick={() => navigate("/create-property")}
+              className="hidden lg:block text-sm font-semibold hover:bg-gray-100 px-4 py-3 rounded-full transition"
+            >
               RoomBnB your home
             </button>
 
@@ -135,18 +145,26 @@ export default function Navbar() {
                       <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
                         Wishlists
                       </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
+                      <Link
+                        to="/my-listings"
+                        className="block px-4 py-2 hover:bg-gray-50 transition"
+                        onClick={() => setShowUserMenu(false)}
+                      >
                         My Listings
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
+                      </Link>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 hover:bg-gray-50 transition"
+                        onClick={() => setShowUserMenu(false)}
+                      >
                         Account
-                      </button>
+                      </Link>
                       <div className="border-t border-gray-200 mt-2"></div>
                       <button
                         onClick={() => {
-                          logout()
-                          setShowUserMenu(false)
-                          navigate('/')
+                          logout();
+                          setShowUserMenu(false);
+                          navigate("/");
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-gray-50 transition text-red-600"
                       >
@@ -170,7 +188,13 @@ export default function Navbar() {
                         Sign up
                       </Link>
                       <div className="border-t border-gray-200 my-2"></div>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate("/create-property");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 transition"
+                      >
                         RoomBnB your home
                       </button>
                       <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
@@ -185,5 +209,5 @@ export default function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }

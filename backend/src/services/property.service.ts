@@ -6,6 +6,7 @@ export class PropertyService {
   async getAllProperties(filters?: {
     city?: string;
     country?: string;
+    propertyType?: string;
     minPrice?: number;
     maxPrice?: number;
     bedrooms?: number;
@@ -18,6 +19,9 @@ export class PropertyService {
     }
     if (filters?.country) {
       where.country = { contains: filters.country, mode: 'insensitive' };
+    }
+    if (filters?.propertyType) {
+      where.propertyType = filters.propertyType;
     }
     if (filters?.minPrice || filters?.maxPrice) {
       where.pricePerNight = {};
