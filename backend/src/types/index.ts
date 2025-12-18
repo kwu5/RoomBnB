@@ -48,6 +48,18 @@ export interface CreateBookingDto {
   specialRequests?: string;
 }
 
+export interface CreateReviewDto {
+  propertyId: string;
+  bookingId: string;
+  rating: number;
+  comment: string;
+}
+
+export interface UpdateReviewDto {
+  rating?: number;
+  comment?: string;
+}
+
 export interface ApiError {
   message: string;
   statusCode: number;

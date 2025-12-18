@@ -176,3 +176,160 @@ docker-compose -f docker-compose.dev.yml up
 # Backend should be on port 5000
 curl http://localhost:5000/api/health
 ```
+
+---
+
+# Reviews System Seed Script
+
+## Overview
+
+The `seed-reviews.sh` script creates comprehensive test data for the Reviews System, including test users, properties, completed bookings, and reviews.
+
+## Usage
+
+### Basic Usage
+```bash
+cd backend
+./tests/seed-reviews.sh
+```
+
+### Clean Mode (Delete Existing Reviews First)
+```bash
+./tests/seed-reviews.sh --clean
+# or
+./tests/seed-reviews.sh -c
+```
+
+## Prerequisites
+
+1. **PostgreSQL Running**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+2. **Environment Variables**
+   - Ensure `.env` file exists with `DATABASE_URL` configured
+
+3. **Prisma Setup**
+   ```bash
+   npm run migrate
+   npm run generate
+   ```
+
+## Test Data Created
+
+### Users (5 total)
+| Email | Password | Role | Name |
+|-------|----------|------|------|
+| host@test.com | Password123! | Host | Sarah Johnson |
+| guest1@test.com | Password123! | Guest | John Smith |
+| guest2@test.com | Password123! | Guest | Emily Davis |
+| guest3@test.com | Password123! | Guest | Michael Brown |
+| guest4@test.com | Password123! | Guest | Jessica Wilson |
+
+### Properties (2 total)
+1. **Luxury Downtown Apartment** - San Francisco, $150/night
+2. **Cozy Beach House** - Malibu, $200/night
+
+### Bookings (8 total)
+- 4 completed bookings per property
+- All bookings are in the past (completed status)
+- Each guest has booked each property once
+
+### Reviews (8 total)
+- Ratings from 3⭐ to 5⭐
+- Realistic comments matching rating levels
+- Created 2 days after checkout
+
+## Testing the Reviews System
+
+### 1. Start Servers
+```bash
+# Backend
+npm run dev
+
+# Frontend (new terminal)
+cd ../frontend && npm run dev
+```
+
+### 2. Login
+Use any test user credentials above
+
+### 3. Test Scenarios
+
+**View Reviews:**
+- Navigate to property detail pages
+- See reviews with ratings, comments, dates
+- Check average rating calculations
+
+**Create Review:**
+- Login as a guest with completed booking
+- Navigate to booked property
+- See review form (only if eligible)
+- Submit review and verify it appears
+
+**Validations:**
+- Form only appears for users with completed bookings
+- Can't review same booking twice
+- Comment must be at least 10 characters
+- Rating must be 1-5
+
+## API Testing
+
+### Get Property Reviews (Public)
+```bash
+curl http://localhost:5000/api/reviews/property/{propertyId}
+```
+
+### Create Review (Auth Required)
+```bash
+curl -X POST http://localhost:5000/api/reviews \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "propertyId": "{propertyId}",
+    "bookingId": "{bookingId}",
+    "rating": 5,
+    "comment": "Amazing experience!"
+  }'
+```
+
+### Check User Review (Auth Required)
+```bash
+curl http://localhost:5000/api/reviews/user-review/{propertyId} \
+  -H "Authorization: Bearer {token}"
+```
+
+## Troubleshooting
+
+**Script won't run:**
+```bash
+# Make executable
+chmod +x tests/seed-reviews.sh
+```
+
+**Database connection failed:**
+```bash
+# Check Docker
+docker ps | grep postgres
+
+# Check DATABASE_URL in .env
+cat .env | grep DATABASE_URL
+```
+
+**Unique constraint errors:**
+```bash
+# Run with clean flag
+./tests/seed-reviews.sh --clean
+```
+
+## Clean Up
+
+Remove test data:
+```bash
+# Clean reviews only
+./tests/seed-reviews.sh --clean
+
+# View/delete via Prisma Studio
+npm run studio
+```
