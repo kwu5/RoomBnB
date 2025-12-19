@@ -1,12 +1,40 @@
-import { Link } from 'react-router-dom'
-import type { Property } from '@/types'
-import { formatCurrency, formatRating } from '@/utils'
+import { Link, useNavigate } from "react-router-dom";
+import type { Property } from "@/types";
+import { formatCurrency, formatRating } from "@/utils";
+import { useAuth } from "@/store/AuthContext";
+import { useWishlist } from "@/store/WishlistContext";
 
 interface PropertyCardProps {
-  property: Property
+  property: Property;
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+  const isFavorited = isInWishlist(property.id);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (isFavorited) {
+        await removeFromWishlist(property.id);
+      } else {
+        await addToWishlist(property.id);
+      }
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
+    }
+  };
+
   const {
     id,
     title,
@@ -16,7 +44,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
     pricePerNight,
     rating,
     reviewCount,
-  } = property
+  } = property;
 
   return (
     <Link to={`/properties/${id}`} className="group cursor-pointer">
@@ -24,21 +52,20 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         {/* Image */}
         <div className="aspect-square relative overflow-hidden rounded-xl">
           <img
-            src={images[0] || 'https://via.placeholder.com/400'}
+            src={images[0] || "https://via.placeholder.com/400"}
             alt={title}
             className="object-cover w-full h-full group-hover:scale-105 transition duration-300"
           />
 
           {/* Favorite Button */}
           <button
-            onClick={(e) => {
-              e.preventDefault()
-              // TODO: Add to favorites functionality
-            }}
+            onClick={handleFavoriteClick}
             className="absolute top-3 right-3 p-2 hover:scale-110 transition"
           >
             <svg
-              className="w-6 h-6 fill-none stroke-white hover:fill-white drop-shadow-lg"
+              className={`w-6 h-6 stroke-white drop-shadow-lg ${
+                isFavorited ? 'fill-red-500' : 'fill-none hover:fill-white'
+              }`}
               strokeWidth={2}
               viewBox="0 0 24 24"
             >
@@ -53,10 +80,16 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           {/* Rating Badge */}
           {rating && (
             <div className="absolute bottom-3 left-3 bg-white px-2 py-1 rounded-lg shadow-md flex items-center gap-1">
-              <svg className="w-4 h-4 text-[#FF385C]" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-4 h-4 text-[#FF385C]"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              <span className="text-sm font-semibold">{formatRating(rating)}</span>
+              <span className="text-sm font-semibold">
+                {formatRating(rating)}
+              </span>
             </div>
           )}
         </div>
@@ -73,7 +106,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
           {reviewCount && (
             <p className="text-gray-500 text-sm">
-              {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
+              {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
             </p>
           )}
 
@@ -86,5 +119,5 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
       </div>
     </Link>
-  )
+  );
 }

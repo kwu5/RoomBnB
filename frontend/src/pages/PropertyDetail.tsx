@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
-import { propertyService, bookingService } from '@/services'
+import ReviewList from '@/components/ReviewList'
+import ReviewForm from '@/components/ReviewForm'
+import { propertyService, bookingService, reviewService } from '@/services'
 import { useAuth } from '@/store'
-import type { Property } from '@/types'
+import type { Property, Review } from '@/types'
 import { formatCurrency, formatRating, calculateNights } from '@/utils'
 import { isCheckOutAfterCheckIn, isDateInFuture } from '@/utils/validation'
 
@@ -24,11 +26,23 @@ export default function PropertyDetail() {
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [bookingSuccess, setBookingSuccess] = useState(false)
 
+  // Review state
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [userReview, setUserReview] = useState<Review | null>(null)
+  const [eligibleBooking, setEligibleBooking] = useState<string | null>(null)
+
   useEffect(() => {
     if (id) {
       fetchProperty(id)
+      fetchReviews(id)
     }
   }, [id])
+
+  useEffect(() => {
+    if (id && isAuthenticated) {
+      checkUserReview(id)
+    }
+  }, [id, isAuthenticated])
 
   const fetchProperty = async (propertyId: string) => {
     setIsLoading(true)
@@ -40,6 +54,44 @@ export default function PropertyDetail() {
       setError(err.message || 'Failed to load property')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const fetchReviews = async (propertyId: string) => {
+    try {
+      const data = await reviewService.getPropertyReviews(propertyId)
+      setReviews(data)
+    } catch (err) {
+      console.error('Failed to fetch reviews:', err)
+    }
+  }
+
+  const checkUserReview = async (propertyId: string) => {
+    try {
+      const data = await reviewService.getUserReview(propertyId)
+      if (data) {
+        setUserReview(data)
+        setEligibleBooking(null)
+      } else {
+        // User hasn't reviewed yet, check if they have a completed booking
+        const guestBookings = await bookingService.getGuestBookings()
+        const completedBooking = guestBookings.find(
+          (b) => b.propertyId === propertyId && b.status === 'completed' && !b.review
+        )
+        if (completedBooking) {
+          setEligibleBooking(completedBooking.id)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to check user review:', err)
+    }
+  }
+
+  const handleReviewSuccess = () => {
+    if (id) {
+      fetchReviews(id)
+      fetchProperty(id)
+      checkUserReview(id)
     }
   }
 
@@ -225,6 +277,29 @@ export default function PropertyDetail() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="pb-8">
+              <h3 className="text-lg font-semibold mb-6">Reviews</h3>
+
+              {/* Review Form - Show if user is authenticated and has eligible booking */}
+              {isAuthenticated && eligibleBooking && !userReview && (
+                <div className="mb-8">
+                  <ReviewForm
+                    propertyId={property.id}
+                    bookingId={eligibleBooking}
+                    onSuccess={handleReviewSuccess}
+                  />
+                </div>
+              )}
+
+              {/* Reviews List */}
+              <ReviewList
+                reviews={reviews}
+                averageRating={property.rating}
+                reviewCount={property.reviewCount}
+              />
             </div>
           </div>
 

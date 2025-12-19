@@ -120,6 +120,15 @@ export interface CreateBookingData {
   specialRequests?: string
 }
 
+// Favorite/Wishlist Types
+export interface Favorite {
+  id: string
+  userId: string
+  propertyId: string 
+  property: Property 
+  creatdAt: string 
+}
+
 // Review Types
 export interface Review {
   id: string

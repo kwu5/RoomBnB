@@ -1,80 +1,87 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import type { User, LoginCredentials, RegisterData } from '@/types'
-import { authService } from '@/services'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import type { User, LoginCredentials, RegisterData } from "@/types";
+import { authService } from "@/services";
 
 interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
-  register: (data: RegisterData) => Promise<void>
-  logout: () => void
-  updateUser: (user: User) => void
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
+  logout: () => void;
+  updateUser: (user: User) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/* eslint-disable react-refresh/only-export-components */
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
-}
+  return context;
+};
 
 interface AuthProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
     const initAuth = () => {
-      const authData = authService.getAuthData()
+      const authData = authService.getAuthData();
       if (authData) {
-        setUser(authData.user)
+        setUser(authData.user);
       }
-      setIsLoading(false)
-    }
+      setIsLoading(false);
+    };
 
-    initAuth()
-  }, [])
+    initAuth();
+  }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const authResponse = await authService.login(credentials)
-      authService.saveAuthData(authResponse)
-      setUser(authResponse.user)
+      const authResponse = await authService.login(credentials);
+      authService.saveAuthData(authResponse);
+      setUser(authResponse.user);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const register = async (data: RegisterData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const authResponse = await authService.register(data)
-      authService.saveAuthData(authResponse)
-      setUser(authResponse.user)
+      const authResponse = await authService.register(data);
+      authService.saveAuthData(authResponse);
+      setUser(authResponse.user);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const logout = () => {
-    authService.logout()
-    setUser(null)
-  }
+    authService.logout();
+    setUser(null);
+  };
 
   const updateUser = (updatedUser: User) => {
-    setUser(updatedUser)
+    setUser(updatedUser);
     // Update localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser))
-  }
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
 
   const value: AuthContextType = {
     user,
@@ -84,7 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     register,
     logout,
     updateUser,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

@@ -142,9 +142,13 @@ export default function Navbar({ onOpenSearch }: NavbarProps = {}) {
                       >
                         My Trips
                       </Link>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50 transition">
+                      <Link
+                        to="/wishlists"
+                        className="block px-4 py-2 hover:bg-gray-50 transition"
+                        onClick={() => setShowUserMenu(false)}
+                      >
                         Wishlists
-                      </button>
+                      </Link>
                       <Link
                         to="/my-listings"
                         className="block px-4 py-2 hover:bg-gray-50 transition"

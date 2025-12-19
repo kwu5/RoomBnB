@@ -8,6 +8,7 @@ import CreateProperty from '@/pages/CreateProperty'
 import MyListings from '@/pages/MyListings'
 import EditProperty from '@/pages/EditProperty'
 import Profile from '@/pages/Profile'
+import Wishlists from '@/pages/Wishlists'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/create-property" element={<CreateProperty />} />
       <Route path="/edit-property/:id" element={<EditProperty />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/wishlists" element={<Wishlists />} />
     </Routes>
   )
 }
