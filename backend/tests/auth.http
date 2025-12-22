@@ -1,0 +1,97 @@
+### RoomBnB Auth API Tests
+### Use with REST Client extension in VS Code
+### Base URL
+@baseUrl = http://localhost:5000/api
+@token =
+
+### 1. Register New User (Success)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123",
+  "firstName": "Alice",
+  "lastName": "Smith",
+  "phone": "+1234567890"
+}
+
+### 2. Register User (Validation Error - Missing Fields)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "bob@example.com",
+  "password": "123"
+}
+
+### 3. Register User (Duplicate Email)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123",
+  "firstName": "Alice",
+  "lastName": "Duplicate"
+}
+
+### 4. Login (Success)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+### 5. Login (Invalid Credentials)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "wrongpassword"
+}
+
+### 6. Login (Non-existent User)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "password123"
+}
+
+### 7. Get Current User Profile (With Token)
+# First login and copy the token, then replace @token value above
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### 8. Get Profile (Without Token)
+GET {{baseUrl}}/auth/me
+
+### 9. Get Profile (Invalid Token)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer invalid_token_here
+
+### 10. Update Profile (Success)
+PUT {{baseUrl}}/auth/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Alice Updated",
+  "lastName": "Smith Updated",
+  "phone": "+9876543210"
+}
+
+### 11. Update Profile (Without Token)
+PUT {{baseUrl}}/auth/profile
+Content-Type: application/json
+
+{
+  "firstName": "Should Fail",
+  "lastName": "No Token"
+}

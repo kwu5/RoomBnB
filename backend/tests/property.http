@@ -1,0 +1,121 @@
+### RoomBnB Property API Tests
+### Use with REST Client extension in VS Code
+
+@baseUrl = http://localhost:5000/api
+@hostToken =
+@propertyId =
+
+### Setup: First create a host user
+### IMPORTANT: After registration, set isHost=true in database using Prisma Studio
+
+### 0a. Register as Host
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "host@example.com",
+  "password": "password123",
+  "firstName": "Property",
+  "lastName": "Host"
+}
+
+### 0b. Login as Host
+# @name hostLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "host@example.com",
+  "password": "password123"
+}
+
+### 1. Get All Properties (Public)
+GET {{baseUrl}}/properties
+
+### 2. Filter by City
+GET {{baseUrl}}/properties?city=New York
+
+### 3. Filter by Price Range
+GET {{baseUrl}}/properties?minPrice=100&maxPrice=500
+
+### 4. Filter by Bedrooms and Guests
+GET {{baseUrl}}/properties?bedrooms=2&guests=4
+
+### 5. Multiple Filters
+GET {{baseUrl}}/properties?city=Miami&minPrice=200&maxPrice=600&bedrooms=3
+
+### 6. Create Property (Success - requires host token)
+# @name createProperty
+POST {{baseUrl}}/properties
+Authorization: Bearer {{hostToken}}
+Content-Type: application/json
+
+{
+  "title": "Luxury Downtown Apartment",
+  "description": "Beautiful 2-bedroom apartment in the heart of downtown",
+  "pricePerNight": 250,
+  "cleaningFee": 50,
+  "bedrooms": 2,
+  "bathrooms": 2,
+  "maxGuests": 4,
+  "address": "123 Main St, Apt 5B",
+  "city": "New York",
+  "country": "USA",
+  "latitude": 40.7128,
+  "longitude": -74.0060,
+  "amenities": ["WiFi", "Kitchen", "AC", "TV"],
+  "propertyType": "Apartment",
+  "images": [
+    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
+    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2"
+  ]
+}
+
+### 7. Create Property (No Auth - Should Fail)
+POST {{baseUrl}}/properties
+Content-Type: application/json
+
+{
+  "title": "Should Fail",
+  "description": "No authentication",
+  "pricePerNight": 100,
+  "bedrooms": 1,
+  "bathrooms": 1,
+  "maxGuests": 2,
+  "address": "Test",
+  "city": "Test",
+  "country": "Test",
+  "propertyType": "House",
+  "images": ["http://test.com/img.jpg"]
+}
+
+### 8. Create Property (Validation Error)
+POST {{baseUrl}}/properties
+Authorization: Bearer {{hostToken}}
+Content-Type: application/json
+
+{
+  "title": "Invalid Property",
+  "description": "Missing required fields"
+}
+
+### 9. Get Property by ID
+GET {{baseUrl}}/properties/{{propertyId}}
+
+### 10. Update Property
+PUT {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{hostToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Luxury Apartment",
+  "pricePerNight": 300
+}
+
+### 11. Get Host's Properties
+GET {{baseUrl}}/properties/host/properties
+Authorization: Bearer {{hostToken}}
+
+### 12. Delete Property
+DELETE {{baseUrl}}/properties/{{propertyId}}
+Authorization: Bearer {{hostToken}}

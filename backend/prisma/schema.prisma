@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  avatar    String?
+  phone     String?
+  isHost    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  properties      Property[]
+  bookingsAsGuest Booking[]  @relation("GuestBookings")
+  reviews         Review[]
+  sentMessages    Message[]  @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  favorites       Favorite[]
+
+  @@map("users")
+}
+
+model Property {
+  id             String   @id @default(cuid())
+  title          String
+  description    String
+  pricePerNight  Float
+  cleaningFee    Float    @default(0)
+  bedrooms       Int
+  bathrooms      Int
+  maxGuests      Int
+  address        String
+  city           String
+  country        String
+  latitude       Float?
+  longitude      Float?
+  amenities      Json     @default("[]")
+  propertyType   String
+  images         String[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  hostId   String
+  host     User      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+  reviews  Review[]
+  favorites Favorite[]
+
+  @@map("properties")
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  checkIn         DateTime
+  checkOut        DateTime
+  totalPrice      Float
+  numberOfGuests  Int
+  specialRequests String?
+  status          String   @default("pending") // pending, confirmed, cancelled, completed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  guestId    String
+  guest      User     @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
+  review     Review?
+
+  @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @default(5)
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  content        String
+  isRead         Boolean  @default(false)
+  conversationId String
+  createdAt      DateTime @default(now())
+
+  // Relations
+  senderId   String
+  sender     User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+  @@index([conversationId])
+  @@index([senderId, receiverId])
+}
+
+model Favorite {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+
+  userId        String
+  propertyId      String
+
+  user          User          @relation(fields:[userId], references:[id],onDelete: Cascade)
+  property      Property      @relation(fields:[propertyId],references:[id],onDelete:Cascade)
+  
+
+  @@unique([userId,propertyId])
+  @@map("favorites")
+}

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomBnB Frontend Tests</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #FF385C;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .test-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #FF385C;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #E31C5F;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 56, 92, 0.3);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #6366f1;
+        }
+
+        button.secondary:hover {
+            background: #4f46e5;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .output {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output:empty::before {
+            content: 'Test output will appear here...';
+            color: #666;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.running {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .status.completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .config {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .config label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .config input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 RoomBnB Frontend Test Runner</h1>
+            <p>Automated property service tests for the RoomBnB application</p>
+        </div>
+
+        <div class="test-panel">
+            <span class="status ready" id="status">Ready</span>
+
+            <div class="config">
+                <label for="apiUrl">API Base URL:</label>
+                <input type="text" id="apiUrl" value="http://localhost:5000/api">
+            </div>
+
+            <div class="buttons">
+                <button onclick="runQuickTest()" id="quickBtn">⚡ Quick Test</button>
+                <button onclick="runFullTests()" id="fullBtn">🎯 Full Test Suite</button>
+                <button onclick="clearOutput()" class="secondary">🗑️ Clear Output</button>
+            </div>
+
+            <div class="output" id="output"></div>
+
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-card">
+                    <div class="number" id="totalTests">0</div>
+                    <div class="label">Total Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="passedTests">0</div>
+                    <div class="label">Passed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="failedTests">0</div>
+                    <div class="label">Failed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="successRate">0%</div>
+                    <div class="label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const outputEl = document.getElementById('output');
+        const statusEl = document.getElementById('status');
+        const statsEl = document.getElementById('stats');
+
+        let API_URL = document.getElementById('apiUrl').value;
+        let testToken = null;
+        let testPropertyId = null;
+
+        document.getElementById('apiUrl').addEventListener('change', (e) => {
+            API_URL = e.target.value;
+        });
+
+        function setStatus(text, type = 'ready') {
+            statusEl.textContent = text;
+            statusEl.className = `status ${type}`;
+        }
+
+        function log(message, color = '#00ff00') {
+            const line = document.createElement('div');
+            line.style.color = color;
+            line.textContent = message;
+            outputEl.appendChild(line);
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+
+        function clearOutput() {
+            outputEl.innerHTML = '';
+            statsEl.style.display = 'none';
+        }
+
+        function updateStats(results) {
+            document.getElementById('totalTests').textContent = results.total;
+            document.getElementById('passedTests').textContent = results.passed;
+            document.getElementById('failedTests').textContent = results.failed;
+            document.getElementById('successRate').textContent =
+                Math.round((results.passed / results.total) * 100) + '%';
+            statsEl.style.display = 'grid';
+        }
+
+        async function makeRequest(endpoint, options = {}) {
+            const url = `${API_URL}${endpoint}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+
+            if (testToken && !headers['Authorization']) {
+                headers['Authorization'] = `Bearer ${testToken}`;
+            }
+
+            const response = await fetch(url, {
+                ...options,
+                headers,
+            });
+
+            const data = await response.json();
+
+            return {
+                status: response.status,
+                ok: response.ok,
+                data,
+            };
+        }
+
+        function logTest(name, passed, message = '') {
+            const emoji = passed ? '✅' : '❌';
+            const color = passed ? '#00ff00' : '#ff4444';
+            log(`${emoji} ${name}${message ? ': ' + message : ''}`, color);
+            return passed;
+        }
+
+        async function testGetAllProperties() {
+            log('\n📋 Test 1: Get All Properties', '#00d4ff');
+            try {
+                const result = await makeRequest('/properties');
+                const passed = result.ok && Array.isArray(result.data);
+                logTest('Get all properties', passed, `Found ${result.data?.length || 0} properties`);
+
+                if (result.data && result.data.length > 0) {
+                    testPropertyId = result.data[0].id;
+                    log(`  Sample property: ${result.data[0].title}`, '#888');
+                }
+
+                return passed;
+            } catch (error) {
+                logTest('Get all properties', false, error.message);
+                return false;
+            }
+        }
+
+        async function testGetPropertiesWithFilters() {
+            log('\n🔍 Test 2: Get Properties with Filters', '#00d4ff');
+            let allPassed = true;
+
+            try {
+                const result = await makeRequest('/properties?city=New York');
+                const passed = result.ok && Array.isArray(result.data);
+                logTest('Filter by city', passed, `Found ${result.data?.length || 0} in New York`);
+                allPassed = allPassed && passed;
+            } catch (error) {
+                logTest('Filter by city', false, error.message);
+                allPassed = false;
+            }
+
+            try {
+                const result = await makeRequest('/properties?minPrice=100&maxPrice=500');
+                const passed = result.ok && Array.isArray(result.data);
+                logTest('Filter by price', passed, `Found ${result.data?.length || 0} ($100-$500)`);
+                allPassed = allPassed && passed;
+            } catch (error) {
+                logTest('Filter by price', false, error.message);
+                allPassed = false;
+            }
+
+            try {
+                const result = await makeRequest('/properties?search=apartment');
+                const passed = result.ok && Array.isArray(result.data);
+                logTest('Search properties', passed, `Found ${result.data?.length || 0} matching "apartment"`);
+                allPassed = allPassed && passed;
+            } catch (error) {
+                logTest('Search properties', false, error.message);
+                allPassed = false;
+            }
+
+            return allPassed;
+        }
+
+        async function testGetPropertyById() {
+            log('\n🏠 Test 3: Get Property by ID', '#00d4ff');
+
+            if (!testPropertyId) {
+                logTest('Get property by ID', false, 'No property ID available');
+                return false;
+            }
+
+            try {
+                const result = await makeRequest(`/properties/${testPropertyId}`);
+                const passed = result.ok && result.data && result.data.id === testPropertyId;
+                logTest('Get property by ID', passed, result.data?.title);
+                return passed;
+            } catch (error) {
+                logTest('Get property by ID', false, error.message);
+                return false;
+            }
+        }
+
+        async function testHostAuth() {
+            log('\n🔐 Test 4: Host Authentication', '#00d4ff');
+
+            const timestamp = Date.now();
+            const hostEmail = `test-host-${timestamp}@example.com`;
+            const hostPassword = 'HostPass123';
+
+            try {
+                const result = await makeRequest('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: hostEmail,
+                        password: hostPassword,
+                        firstName: 'Test',
+                        lastName: 'Host',
+                        isHost: true,
+                    }),
+                });
+
+                const passed = result.ok && result.data?.token;
+                logTest('Register as host', passed);
+
+                if (passed) {
+                    testToken = result.data.token;
+                    log(`  Email: ${hostEmail}`, '#888');
+                }
+
+                return passed;
+            } catch (error) {
+                logTest('Register as host', false, error.message);
+                return false;
+            }
+        }
+
+        async function testCreateProperty() {
+            log('\n➕ Test 5: Create Property', '#00d4ff');
+
+            if (!testToken) {
+                logTest('Create property', false, 'Not authenticated');
+                return false;
+            }
+
+            try {
+                const result = await makeRequest('/properties', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: 'Test Property from Frontend',
+                        description: 'Test property created via test runner',
+                        pricePerNight: 250,
+                        cleaningFee: 50,
+                        bedrooms: 2,
+                        bathrooms: 1,
+                        maxGuests: 4,
+                        address: '789 Test Ave',
+                        city: 'Test City',
+                        country: 'Test Country',
+                        latitude: 40.7128,
+                        longitude: -74.0060,
+                        amenities: ['WiFi', 'Kitchen', 'Parking'],
+                        propertyType: 'Apartment',
+                        images: ['https://via.placeholder.com/800'],
+                    }),
+                });
+
+                const passed = result.ok && result.data?.id;
+                logTest('Create property', passed, result.data?.title);
+
+                if (passed) {
+                    window.testCreatedPropertyId = result.data.id;
+                }
+
+                return passed;
+            } catch (error) {
+                logTest('Create property', false, error.message);
+                return false;
+            }
+        }
+
+        async function testGetMyListings() {
+            log('\n📝 Test 6: Get My Listings', '#00d4ff');
+
+            if (!testToken) {
+                logTest('Get my listings', false, 'Not authenticated');
+                return false;
+            }
+
+            try {
+                const result = await makeRequest('/properties/my-listings');
+                const passed = result.ok && Array.isArray(result.data);
+                logTest('Get my listings', passed, `Found ${result.data?.length || 0} listings`);
+                return passed;
+            } catch (error) {
+                logTest('Get my listings', false, error.message);
+                return false;
+            }
+        }
+
+        async function testUpdateProperty() {
+            log('\n✏️ Test 7: Update Property', '#00d4ff');
+
+            if (!testToken || !window.testCreatedPropertyId) {
+                logTest('Update property', false, 'Prerequisites not met');
+                return false;
+            }
+
+            try {
+                const result = await makeRequest(`/properties/${window.testCreatedPropertyId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        title: 'Updated Test Property',
+                        pricePerNight: 300,
+                    }),
+                });
+
+                const passed = result.ok;
+                logTest('Update property', passed);
+                return passed;
+            } catch (error) {
+                logTest('Update property', false, error.message);
+                return false;
+            }
+        }
+
+        async function testDeleteProperty() {
+            log('\n🗑️ Test 8: Delete Property', '#00d4ff');
+
+            if (!testToken || !window.testCreatedPropertyId) {
+                logTest('Delete property', false, 'Prerequisites not met');
+                return false;
+            }
+
+            try {
+                const result = await makeRequest(`/properties/${window.testCreatedPropertyId}`, {
+                    method: 'DELETE',
+                });
+
+                const passed = result.ok;
+                logTest('Delete property', passed);
+                return passed;
+            } catch (error) {
+                logTest('Delete property', false, error.message);
+                return false;
+            }
+        }
+
+        async function runQuickTest() {
+            clearOutput();
+            setStatus('Running Quick Test...', 'running');
+            document.getElementById('quickBtn').disabled = true;
+            document.getElementById('fullBtn').disabled = true;
+
+            log('⚡ Running Quick Smoke Test...', '#ffaa00');
+            log('=====================================\n', '#ffaa00');
+
+            await testGetAllProperties();
+            await testGetPropertyById();
+
+            log('\n=====================================', '#ffaa00');
+            log('✅ Quick test complete!\n', '#00ff00');
+
+            setStatus('Completed', 'completed');
+            document.getElementById('quickBtn').disabled = false;
+            document.getElementById('fullBtn').disabled = false;
+        }
+
+        async function runFullTests() {
+            clearOutput();
+            setStatus('Running Full Test Suite...', 'running');
+            document.getElementById('quickBtn').disabled = true;
+            document.getElementById('fullBtn').disabled = true;
+
+            log('🧪 Running Property Service Tests...', '#ffaa00');
+            log('=====================================\n', '#ffaa00');
+
+            const results = {
+                total: 0,
+                passed: 0,
+                failed: 0,
+            };
+
+            const tests = [
+                testGetAllProperties,
+                testGetPropertiesWithFilters,
+                testGetPropertyById,
+                testHostAuth,
+                testCreateProperty,
+                testGetMyListings,
+                testUpdateProperty,
+                testDeleteProperty,
+            ];
+
+            for (const test of tests) {
+                results.total++;
+                const passed = await test();
+                if (passed) {
+                    results.passed++;
+                } else {
+                    results.failed++;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            log('\n=====================================', '#ffaa00');
+            log('📊 Test Results:', '#00d4ff');
+            log(`   Total: ${results.total}`, '#888');
+            log(`   ✅ Passed: ${results.passed}`, '#00ff00');
+            log(`   ❌ Failed: ${results.failed}`, '#ff4444');
+            log(`   Success Rate: ${Math.round((results.passed / results.total) * 100)}%`, '#ffaa00');
+            log('=====================================\n', '#ffaa00');
+
+            updateStats(results);
+            setStatus('Completed', 'completed');
+            document.getElementById('quickBtn').disabled = false;
+            document.getElementById('fullBtn').disabled = false;
+        }
+
+        log('💡 Test runner loaded and ready!', '#00d4ff');
+        log('   Click "Quick Test" for a 2-test smoke test', '#888');
+        log('   Click "Full Test Suite" for all 8 tests\n', '#888');
+    </script>
+</body>
+</html>
