@@ -2,7 +2,6 @@ import api from './api'
 import type {
   Property,
   PropertySearchParams,
-  PropertySearchResponse,
   ApiResponse,
 } from '@/types'
 

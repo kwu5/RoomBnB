@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
 import { propertyService } from '@/services'
 import { useAuth } from '@/store'
-import { AMENITIES, PROPERTY_CATEGORIES } from '@/types'
+import { AMENITIES } from '@/types'
+import type { PropertyType } from '@/types'
 
 export default function CreateProperty() {
   const navigate = useNavigate()
@@ -128,7 +129,7 @@ export default function CreateProperty() {
         country: formData.country,
         latitude: formData.latitude ? Number(formData.latitude) : undefined,
         longitude: formData.longitude ? Number(formData.longitude) : undefined,
-        propertyType: formData.propertyType,
+        propertyType: formData.propertyType as PropertyType,
         amenities: formData.amenities,
         images: formData.images.filter(img => img.trim()),
       }

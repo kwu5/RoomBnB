@@ -76,14 +76,14 @@ export default function MyBookings() {
     switch (filter) {
       case 'upcoming':
         return bookings.filter(
-          (b) => new Date(b.checkIn) > now && b.status !== 'cancelled'
+          (b) => new Date(b.checkIn) > now && b.status !== 'CANCELLED'
         )
       case 'past':
         return bookings.filter(
-          (b) => new Date(b.checkOut) < now && b.status !== 'cancelled'
+          (b) => new Date(b.checkOut) < now && b.status !== 'CANCELLED'
         )
       case 'cancelled':
-        return bookings.filter((b) => b.status === 'cancelled')
+        return bookings.filter((b) => b.status === 'CANCELLED')
       default:
         return bookings
     }
@@ -192,10 +192,10 @@ export default function MyBookings() {
                   <div className="flex flex-col md:flex-row">
                     <div className="md:w-64 h-48 md:h-auto flex-shrink-0">
                       <img
-                        src={booking.property.images[0] || 'https://via.placeholder.com/400'}
-                        alt={booking.property.title}
+                        src={booking.property?.images[0] || 'https://via.placeholder.com/400'}
+                        alt={booking.property?.title || 'Property'}
                         className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => navigate(`/properties/${booking.property.id}`)}
+                        onClick={() => navigate(`/properties/${booking.property?.id}`)}
                       />
                     </div>
 
@@ -204,12 +204,12 @@ export default function MyBookings() {
                         <div>
                           <h3
                             className="text-xl font-semibold text-gray-900 mb-1 cursor-pointer hover:text-[#FF385C]"
-                            onClick={() => navigate(`/properties/${booking.property.id}`)}
+                            onClick={() => navigate(`/properties/${booking.property?.id}`)}
                           >
-                            {booking.property.title}
+                            {booking.property?.title || 'N/A'}
                           </h3>
                           <p className="text-gray-600 text-sm">
-                            {booking.property.city}, {booking.property.country}
+                            {booking.property?.city}, {booking.property?.country}
                           </p>
                         </div>
                         {getStatusBadge(booking.status)}
@@ -250,7 +250,7 @@ export default function MyBookings() {
                         )}
                       </div>
 
-                      {booking.status !== 'cancelled' && new Date(booking.checkIn) > new Date() && (
+                      {booking.status !== 'CANCELLED' && new Date(booking.checkIn) > new Date() && (
                         <div className="flex gap-3 pt-4 border-t border-gray-200">
                           <button
                             onClick={() => handleCancelBooking(booking.id)}
@@ -260,7 +260,7 @@ export default function MyBookings() {
                             {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
                           </button>
                           <button
-                            onClick={() => navigate(`/properties/${booking.property.id}`)}
+                            onClick={() => navigate(`/properties/${booking.property?.id}`)}
                             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
                           >
                             View Property

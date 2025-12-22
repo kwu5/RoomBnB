@@ -13,7 +13,7 @@ router.use('/bookings', bookingRoutes);
 router.use('/favorites',favoriteRoutes);
 router.use('/reviews', reviewRoutes);
 
-router.get('/health', (req, res) => {
+router.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

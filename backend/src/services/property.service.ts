@@ -57,11 +57,11 @@ export class PropertyService {
       },
     });
 
-    return properties.map((property) => ({
+    return properties.map((property: any) => ({
       ...property,
       averageRating:
         property.reviews.length > 0
-          ? property.reviews.reduce((sum, r) => sum + r.rating, 0) / property.reviews.length
+          ? property.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / property.reviews.length
           : null,
       reviewCount: property.reviews.length,
     }));

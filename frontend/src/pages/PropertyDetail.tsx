@@ -76,7 +76,7 @@ export default function PropertyDetail() {
         // User hasn't reviewed yet, check if they have a completed booking
         const guestBookings = await bookingService.getGuestBookings()
         const completedBooking = guestBookings.find(
-          (b) => b.propertyId === propertyId && b.status === 'completed' && !b.review
+          (b) => b.propertyId === propertyId && b.status === 'COMPLETED'
         )
         if (completedBooking) {
           setEligibleBooking(completedBooking.id)
@@ -120,8 +120,8 @@ export default function PropertyDetail() {
     try {
       await bookingService.createBooking({
         propertyId: id,
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
+        checkIn: new Date(checkIn).toISOString(),
+        checkOut: new Date(checkOut).toISOString(),
         numberOfGuests: guests,
       })
 
