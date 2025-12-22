@@ -5,6 +5,20 @@
 .env
 .env.local
 .env.*.local
+.env.production
 
 # Docker
 docker-compose.override.yml
+
+# AWS & Deployment
+*.pem
+*.key
+deploy.config
+backups/
+*.sql
+*.sql.gz
+
+# Build outputs
+dist/
+build/
+*.log

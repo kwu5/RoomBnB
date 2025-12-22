@@ -1,0 +1,79 @@
+name: Deploy to AWS EC2
+
+# This workflow automatically deploys to your EC2 server when you push to main
+# Setup required:
+# 1. Add GitHub Secrets (Settings → Secrets and variables → Actions):
+#    - EC2_HOST: Your EC2 public IP
+#    - EC2_USERNAME: ubuntu
+#    - EC2_SSH_KEY: Content of your .pem file
+#
+# 2. Ensure your EC2 security group allows SSH from GitHub IPs (or use a bastion/VPN)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/deploy_key.pem $EC2_USERNAME@$EC2_HOST << 'EOF'
+            cd RoomBnB
+
+            # Pull latest changes
+            git pull origin main
+
+            # Rebuild and restart containers
+            docker-compose down
+            docker-compose up -d --build
+
+            # Run migrations
+            docker-compose exec -T backend npx prisma migrate deploy
+
+            # Show status
+            docker-compose ps
+          EOF
+
+      - name: Verify deployment
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          sleep 10
+          ssh -i ~/.ssh/deploy_key.pem $EC2_USERNAME@$EC2_HOST << 'EOF'
+            cd RoomBnB
+
+            # Check if containers are running
+            if [ $(docker-compose ps -q | wc -l) -eq 3 ]; then
+              echo "✓ All containers are running"
+              exit 0
+            else
+              echo "✗ Some containers failed to start"
+              docker-compose logs
+              exit 1
+            fi
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key.pem
