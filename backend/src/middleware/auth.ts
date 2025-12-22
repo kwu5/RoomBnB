@@ -6,7 +6,7 @@ import { AppError } from './errorHandler';
 
 export const authenticate = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
@@ -35,7 +35,7 @@ export const authenticate = async (
 
 export const requireHost = (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   if (!req.user?.isHost) {

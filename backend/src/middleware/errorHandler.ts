@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../types';
 
 class AppError extends Error {
   statusCode: number;
@@ -15,9 +14,9 @@ class AppError extends Error {
 
 const errorHandler = (
   err: AppError | Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({

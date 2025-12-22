@@ -53,7 +53,7 @@ This is the fastest path to get your RoomBnB app live on AWS.
 
 5. **Launch instance** → Wait 2 minutes → Copy "Public IPv4 address"
    ```
-   Your server IP: _____________ (write this down!)
+   Your server IP: _13.56.82.217_ (write this down!)
    ```
 
 ### Part 3: Connect to Server (5 minutes)
