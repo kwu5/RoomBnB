@@ -60,6 +60,22 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://localhost:5000
+  
+  prisma-studio:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: roombnb-prisma-studio
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://roombnb:roombnb_password@postgres:5432/roombnb
+    ports:
+      - "5555:5555"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npx prisma studio --port 5555 --browser none
 
 volumes:
   postgres_data:
