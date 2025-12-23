@@ -99,7 +99,7 @@ exit
 
 **SSH back in**:
 ```bash
-ssh -i ~/.ssh/roombnb-key.pem ubuntu@YOUR_IP  # or on Windows: ssh -i roombnb-key.pem ubuntu@YOUR_IP
+ssh -i .ssh/roombnb-key.pem ubuntu@13.56.82.217  # or on Windows: ssh -i roombnb-key.pem ubuntu@13.56.82.217
 ```
 
 ### Part 5: Deploy Application (5 minutes)
