@@ -33,7 +33,7 @@ uploads/*
 !uploads/.gitkeep
 
 # Prisma
-prisma/migrations/
+# prisma/migrations/
 
 # Logs
 logs/
