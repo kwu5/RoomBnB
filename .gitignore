@@ -15,7 +15,8 @@ docker-compose.override.yml
 *.key
 deploy.config
 backups/
-*.sql
+backups/**/*.sql
+!backend/prisma/migrations/**/*.sql
 *.sql.gz
 
 # Build outputs
