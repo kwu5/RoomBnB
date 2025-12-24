@@ -54,7 +54,7 @@ services:
       target: production
       args:
       # IMPORTANT: Change this to your EC2 IP before deploying!
-      VITE_API_URL: http://localhost:5000/api  
+        VITE_API_URL: http://localhost:5000/api  
     container_name: roombnb-frontend
     restart: unless-stopped
     ports:
