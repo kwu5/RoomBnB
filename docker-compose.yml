@@ -52,14 +52,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
+      args:
+      # IMPORTANT: Change this to your EC2 IP before deploying!
+        VITE_API_URL: http://localhost:5000/api  
     container_name: roombnb-frontend
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://localhost:5000
+   
   
   prisma-studio:
     build:
