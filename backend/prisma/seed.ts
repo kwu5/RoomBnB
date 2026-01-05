@@ -86,7 +86,7 @@ async function main() {
         country: 'USA',
         latitude: 25.7617,
         longitude: -80.1918,
-        amenities: JSON.stringify(['WiFi', 'Pool', 'Beach Access', 'Kitchen', 'Parking', 'Air Conditioning']),
+        amenities: ['WiFi', 'Pool', 'Beach Access', 'Kitchen', 'Parking', 'Air Conditioning'],
         propertyType: 'Villa',
         images: [
           'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
@@ -110,7 +110,7 @@ async function main() {
         country: 'USA',
         latitude: 39.1911,
         longitude: -106.8175,
-        amenities: JSON.stringify(['WiFi', 'Fireplace', 'Hot Tub', 'Kitchen', 'Parking', 'Heating']),
+        amenities: ['WiFi', 'Fireplace', 'Hot Tub', 'Kitchen', 'Parking', 'Heating'],
         propertyType: 'Cabin',
         images: [
           'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800',
@@ -133,7 +133,7 @@ async function main() {
         country: 'USA',
         latitude: 40.7128,
         longitude: -74.0060,
-        amenities: JSON.stringify(['WiFi', 'Gym', 'Elevator', 'Kitchen', 'Workspace', 'Air Conditioning']),
+        amenities: ['WiFi', 'Gym', 'Elevator', 'Kitchen', 'Workspace', 'Air Conditioning'],
         propertyType: 'Apartment',
         images: [
           'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
@@ -157,7 +157,7 @@ async function main() {
         country: 'USA',
         latitude: 45.5152,
         longitude: -122.6784,
-        amenities: JSON.stringify(['WiFi', 'Garden', 'Fireplace', 'Kitchen', 'Parking', 'Pet Friendly']),
+        amenities: ['WiFi', 'Garden', 'Fireplace', 'Kitchen', 'Parking', 'Pet Friendly'],
         propertyType: 'House',
         images: [
           'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
@@ -180,7 +180,7 @@ async function main() {
         country: 'USA',
         latitude: 32.7157,
         longitude: -117.1611,
-        amenities: JSON.stringify(['WiFi', 'Beach Access', 'BBQ', 'Kitchen', 'Parking', 'Outdoor Seating']),
+        amenities: ['WiFi', 'Beach Access', 'BBQ', 'Kitchen', 'Parking', 'Outdoor Seating'],
         propertyType: 'Bungalow',
         images: [
           'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800',

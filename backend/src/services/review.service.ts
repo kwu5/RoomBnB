@@ -32,9 +32,14 @@ export class ReviewService {
       throw new AppError('You can only review your own bookings', 403);
     }
 
-    // Check if booking status is completed
-    if (booking.status !== 'completed') {
-      throw new AppError('You can only review completed bookings', 400);
+    // Check if booking is eligible for review (completed or confirmed with past checkout)
+    const checkoutDate = new Date(booking.checkOut);
+    const now = new Date();
+    const isCompleted = booking.status === 'completed';
+    const isConfirmedAndPast = booking.status === 'confirmed' && checkoutDate < now;
+
+    if (!isCompleted && !isConfirmedAndPast) {
+      throw new AppError('You can only review completed trips', 400);
     }
 
     // Check if booking is for the correct property
@@ -97,12 +102,16 @@ export class ReviewService {
   }
 
   async getUserReview(userId: string, propertyId: string) {
-    // Find if user has any completed booking for this property
+    // Find if user has any completed or past confirmed booking for this property
+    const now = new Date();
     const booking = await prisma.booking.findFirst({
       where: {
         guestId: userId,
         propertyId,
-        status: 'completed',
+        OR: [
+          { status: 'completed' },
+          { status: 'confirmed', checkOut: { lt: now } },
+        ],
       },
       include: {
         review: true,

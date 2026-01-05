@@ -103,15 +103,16 @@ export interface Booking {
   property?: Property
   guestId: string
   guest?: User
+  review?: Review | null
   createdAt: string
   updatedAt: string
 }
 
 export type BookingStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
-  | 'CANCELLED'
-  | 'COMPLETED'
+  | 'pending'
+  | 'confirmed'
+  | 'cancelled'
+  | 'completed'
 
 export interface CreateBookingData {
   propertyId: string
