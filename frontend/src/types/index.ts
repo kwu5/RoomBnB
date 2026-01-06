@@ -113,6 +113,7 @@ export type BookingStatus =
   | 'confirmed'
   | 'cancelled'
   | 'completed'
+  | 'rejected'
 
 export interface CreateBookingData {
   propertyId: string

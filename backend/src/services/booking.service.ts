@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { CreateBookingDto } from '../types';
 import { AppError } from '../middleware/errorHandler';
+import { emailService } from './email.service';
 
 export class BookingService {
   async createBooking(guestId: string, data: CreateBookingDto) {
@@ -63,6 +64,7 @@ export class BookingService {
           include: {
             host: {
               select: {
+                id: true,
                 firstName: true,
                 lastName: true,
                 email: true,
@@ -70,7 +72,29 @@ export class BookingService {
             },
           },
         },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
+    });
+
+    // Send email notification to host
+    emailService.sendNewBookingToHost({
+      guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+      hostName: `${booking.property.host.firstName} ${booking.property.host.lastName}`,
+      hostEmail: booking.property.host.email,
+      guestEmail: booking.guest.email,
+      propertyTitle: booking.property.title,
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      totalPrice: booking.totalPrice,
+      numberOfGuests: booking.numberOfGuests,
+      specialRequests: booking.specialRequests || undefined,
     });
 
     return booking;
@@ -158,7 +182,26 @@ export class BookingService {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        property: true,
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -181,8 +224,259 @@ export class BookingService {
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: { status: 'cancelled' },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    const emailData = {
+      guestName: `${updatedBooking.guest.firstName} ${updatedBooking.guest.lastName}`,
+      hostName: `${updatedBooking.property.host.firstName} ${updatedBooking.property.host.lastName}`,
+      hostEmail: updatedBooking.property.host.email,
+      guestEmail: updatedBooking.guest.email,
+      propertyTitle: updatedBooking.property.title,
+      checkIn: updatedBooking.checkIn,
+      checkOut: updatedBooking.checkOut,
+      totalPrice: updatedBooking.totalPrice,
+      numberOfGuests: updatedBooking.numberOfGuests,
+    };
+
+    // Send cancellation emails to both parties
+    if (userId === booking.guestId) {
+      // Guest cancelled - notify host
+      emailService.sendBookingCancelledToHost(emailData);
+    } else {
+      // Host cancelled - notify guest
+      emailService.sendBookingCancelledToGuest(emailData);
+    }
+
+    return updatedBooking;
+  }
+
+  async confirmBooking(bookingId: string, hostId: string) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new AppError('Booking not found', 404);
+    }
+
+    if (booking.property.hostId !== hostId) {
+      throw new AppError('Not authorized to confirm this booking', 403);
+    }
+
+    if (booking.status !== 'pending') {
+      throw new AppError(`Cannot confirm booking with status: ${booking.status}`, 400);
+    }
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'confirmed' },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Send confirmation email to guest
+    emailService.sendBookingConfirmedToGuest({
+      guestName: `${updatedBooking.guest.firstName} ${updatedBooking.guest.lastName}`,
+      hostName: `${updatedBooking.property.host.firstName} ${updatedBooking.property.host.lastName}`,
+      hostEmail: updatedBooking.property.host.email,
+      guestEmail: updatedBooking.guest.email,
+      propertyTitle: updatedBooking.property.title,
+      checkIn: updatedBooking.checkIn,
+      checkOut: updatedBooking.checkOut,
+      totalPrice: updatedBooking.totalPrice,
+      numberOfGuests: updatedBooking.numberOfGuests,
     });
 
     return updatedBooking;
+  }
+
+  async rejectBooking(bookingId: string, hostId: string) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new AppError('Booking not found', 404);
+    }
+
+    if (booking.property.hostId !== hostId) {
+      throw new AppError('Not authorized to reject this booking', 403);
+    }
+
+    if (booking.status !== 'pending') {
+      throw new AppError(`Cannot reject booking with status: ${booking.status}`, 400);
+    }
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: 'rejected' },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Send rejection email to guest
+    emailService.sendBookingRejectedToGuest({
+      guestName: `${updatedBooking.guest.firstName} ${updatedBooking.guest.lastName}`,
+      hostName: `${updatedBooking.property.host.firstName} ${updatedBooking.property.host.lastName}`,
+      hostEmail: updatedBooking.property.host.email,
+      guestEmail: updatedBooking.guest.email,
+      propertyTitle: updatedBooking.property.title,
+      checkIn: updatedBooking.checkIn,
+      checkOut: updatedBooking.checkOut,
+      totalPrice: updatedBooking.totalPrice,
+      numberOfGuests: updatedBooking.numberOfGuests,
+    });
+
+    return updatedBooking;
+  }
+
+  async completeExpiredBookings() {
+    const now = new Date();
+
+    const result = await prisma.booking.updateMany({
+      where: {
+        status: 'confirmed',
+        checkOut: { lt: now },
+      },
+      data: { status: 'completed' },
+    });
+
+    return result.count;
+  }
+
+  async getBookingWithDetails(bookingId: string) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        property: {
+          include: {
+            host: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        guest: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return booking;
   }
 }

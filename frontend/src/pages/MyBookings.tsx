@@ -65,17 +65,18 @@ export default function MyBookings() {
   };
 
   const getStatusBadge = (status: string) => {
-    const styles = {
+    const styles: Record<string, string> = {
       pending: "bg-yellow-100 text-yellow-800",
       confirmed: "bg-green-100 text-green-800",
       cancelled: "bg-red-100 text-red-800",
-      completed: "bg-gray-100 text-gray-800",
+      completed: "bg-blue-100 text-blue-800",
+      rejected: "bg-gray-100 text-gray-800",
     };
 
     return (
       <span
         className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
-          styles[status as keyof typeof styles] || styles.pending
+          styles[status] || styles.pending
         }`}
       >
         {status}
@@ -89,14 +90,14 @@ export default function MyBookings() {
     switch (filter) {
       case "upcoming":
         return bookings.filter(
-          (b) => new Date(b.checkIn) > now && b.status !== "cancelled"
+          (b) => new Date(b.checkIn) > now && b.status !== "cancelled" && b.status !== "rejected"
         );
       case "past":
         return bookings.filter(
-          (b) => new Date(b.checkOut) < now && b.status !== "cancelled"
+          (b) => new Date(b.checkOut) < now && b.status !== "cancelled" && b.status !== "rejected"
         );
       case "cancelled":
-        return bookings.filter((b) => b.status === "cancelled");
+        return bookings.filter((b) => b.status === "cancelled" || b.status === "rejected");
       default:
         return bookings;
     }
@@ -285,7 +286,8 @@ export default function MyBookings() {
                         )}
                       </div>
 
-                      {booking.status !== "cancelled" &&
+                      {/* Actions for upcoming bookings (pending or confirmed) */}
+                      {(booking.status === "pending" || booking.status === "confirmed") &&
                         new Date(booking.checkIn) > new Date() && (
                           <div className="flex gap-3 pt-4 border-t border-gray-200">
                             <button
@@ -309,7 +311,7 @@ export default function MyBookings() {
                         )}
 
                       {/* Actions for completed trips */}
-                      {booking.status !== "cancelled" &&
+                      {(booking.status === "confirmed" || booking.status === "completed") &&
                         new Date(booking.checkOut) < new Date() && (
                           <div className="flex gap-3 pt-4 border-t border-gray-200">
                             {!booking.review ? (

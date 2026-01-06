@@ -9,6 +9,7 @@ import MyListings from '@/pages/MyListings'
 import EditProperty from '@/pages/EditProperty'
 import Profile from '@/pages/Profile'
 import Wishlists from '@/pages/Wishlists'
+import HostBookings from '@/pages/HostBookings'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/properties/:id" element={<PropertyDetail />} />
       <Route path="/my-bookings" element={<MyBookings />} />
       <Route path="/my-listings" element={<MyListings />} />
+      <Route path="/host-bookings" element={<HostBookings />} />
       <Route path="/create-property" element={<CreateProperty />} />
       <Route path="/edit-property/:id" element={<EditProperty />} />
       <Route path="/profile" element={<Profile />} />

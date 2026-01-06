@@ -5,6 +5,7 @@ import { config } from './config/env';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import prisma from './config/database';
+import { BookingService } from './services/booking.service';
 
 const app = express();
 
@@ -29,10 +30,28 @@ app.use(errorHandler);
 
 const PORT = config.port;
 
+const runBookingAutoComplete = async () => {
+  try {
+    const bookingService = new BookingService();
+    const count = await bookingService.completeExpiredBookings();
+    if (count > 0) {
+      console.log(`[Auto-complete] Marked ${count} bookings as completed`);
+    }
+  } catch (error) {
+    console.error('[Auto-complete] Error completing expired bookings:', error);
+  }
+};
+
 const startServer = async () => {
   try {
     await prisma.$connect();
     console.log('Database connected successfully');
+
+    // Run auto-complete on startup
+    await runBookingAutoComplete();
+
+    // Run auto-complete every hour
+    setInterval(runBookingAutoComplete, 60 * 60 * 1000);
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
