@@ -104,6 +104,7 @@ export interface Booking {
   guestId: string
   guest?: User
   review?: Review | null
+  guestReview?: GuestReview | null
   createdAt: string
   updatedAt: string
 }
@@ -149,6 +150,34 @@ export interface Review {
 export interface CreateReviewData {
   propertyId: string
   bookingId?: string
+  rating: number
+  comment: string
+}
+
+// Guest Review Types (Host reviews of guests)
+export interface GuestReview {
+  id: string
+  rating: number
+  comment: string
+  hostId: string
+  host?: User
+  guestId: string
+  guest?: User
+  bookingId: string
+  booking?: {
+    id: string
+    property?: {
+      id: string
+      title: string
+    }
+  }
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateGuestReviewData {
+  bookingId: string
+  guestId: string
   rating: number
   comment: string
 }

@@ -3,6 +3,7 @@ import { RegisterDto, LoginDto } from '../types';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import { AppError } from '../middleware/errorHandler';
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
 
 export class AuthService {
   async register(data: RegisterDto) {
@@ -102,6 +103,87 @@ export class AuthService {
         lastName: data.lastName,
         phone: data.phone,
       },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        isHost: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
+  }
+
+  async uploadAvatar(userId: string, fileBuffer: Buffer) {
+    // Get current user to check for existing avatar
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatar: true },
+    });
+
+    // Delete old avatar from Cloudinary if exists
+    if (currentUser?.avatar) {
+      try {
+        // Extract public ID from Cloudinary URL
+        const urlParts = currentUser.avatar.split('/');
+        const publicIdWithExt = urlParts.slice(-2).join('/');
+        const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+        await deleteFromCloudinary(publicId);
+      } catch {
+        // Ignore deletion errors for old avatars
+      }
+    }
+
+    // Upload new avatar
+    const { url } = await uploadToCloudinary(fileBuffer, 'roombnb/avatars');
+
+    // Update user with new avatar URL
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: url },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        isHost: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
+  }
+
+  async deleteAvatar(userId: string) {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatar: true },
+    });
+
+    if (!currentUser?.avatar) {
+      throw new AppError('No avatar to delete', 400);
+    }
+
+    // Delete from Cloudinary
+    try {
+      const urlParts = currentUser.avatar.split('/');
+      const publicIdWithExt = urlParts.slice(-2).join('/');
+      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+      await deleteFromCloudinary(publicId);
+    } catch {
+      // Continue even if Cloudinary deletion fails
+    }
+
+    // Remove avatar URL from user
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { avatar: null },
       select: {
         id: true,
         email: true,

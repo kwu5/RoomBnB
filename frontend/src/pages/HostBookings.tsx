@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
+import GuestReviewModal from '@/components/GuestReviewModal'
 import { bookingService } from '@/services'
 import { useAuth } from '@/store'
 import type { Booking, BookingStatus } from '@/types'
 import { formatCurrency, formatDateRange, calculateNights } from '@/utils'
 
 type BookingFilter = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled'
+
+interface ReviewModalState {
+  isOpen: boolean
+  bookingId: string
+  guestId: string
+  guestName: string
+  propertyTitle: string
+}
 
 export default function HostBookings() {
   const navigate = useNavigate()
@@ -17,6 +26,13 @@ export default function HostBookings() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<BookingFilter>('all')
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [reviewModal, setReviewModal] = useState<ReviewModalState>({
+    isOpen: false,
+    bookingId: '',
+    guestId: '',
+    guestName: '',
+    propertyTitle: '',
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -124,6 +140,33 @@ export default function HostBookings() {
 
   const filteredBookings = filterBookings()
   const pendingCount = bookings.filter((b) => b.status === 'pending').length
+
+  const openReviewModal = (booking: Booking) => {
+    setReviewModal({
+      isOpen: true,
+      bookingId: booking.id,
+      guestId: booking.guestId,
+      guestName: `${booking.guest?.firstName || ''} ${booking.guest?.lastName || ''}`.trim(),
+      propertyTitle: booking.property?.title || 'Property',
+    })
+  }
+
+  const closeReviewModal = () => {
+    setReviewModal((prev) => ({ ...prev, isOpen: false }))
+  }
+
+  const handleReviewSuccess = () => {
+    fetchBookings()
+  }
+
+  const canReviewGuest = (booking: Booking): boolean => {
+    // Can review if booking is completed and no guest review exists
+    const isCompleted = booking.status === 'completed'
+    const isPastCheckout = booking.status === 'confirmed' && new Date(booking.checkOut) < new Date()
+    const hasNoReview = !booking.guestReview
+
+    return (isCompleted || isPastCheckout) && hasNoReview
+  }
 
   if (isLoading) {
     return (
@@ -365,6 +408,27 @@ export default function HostBookings() {
                           </button>
                         )}
 
+                        {canReviewGuest(booking) && (
+                          <button
+                            onClick={() => openReviewModal(booking)}
+                            className="px-4 py-2 bg-[#FF385C] text-white rounded-lg font-medium hover:bg-[#E31C5F] transition flex items-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                            Review Guest
+                          </button>
+                        )}
+
+                        {booking.guestReview && (
+                          <span className="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-medium flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Guest Reviewed
+                          </span>
+                        )}
+
                         <button
                           onClick={() => navigate(`/properties/${booking.property?.id}`)}
                           className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
@@ -380,6 +444,17 @@ export default function HostBookings() {
           </div>
         )}
       </main>
+
+      {/* Guest Review Modal */}
+      <GuestReviewModal
+        isOpen={reviewModal.isOpen}
+        onClose={closeReviewModal}
+        bookingId={reviewModal.bookingId}
+        guestId={reviewModal.guestId}
+        guestName={reviewModal.guestName}
+        propertyTitle={reviewModal.propertyTitle}
+        onSuccess={handleReviewSuccess}
+      />
     </div>
   )
 }
