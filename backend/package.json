@@ -11,7 +11,9 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:reset": "prisma migrate reset",
     "generate": "prisma generate",
-    "seed": "tsx src/seed.ts",
+    "seed": "tsx prisma/seed.ts",
+    "seed:build": "tsc prisma/seed.ts --outDir dist/prisma --esModuleInterop --skipLibCheck --resolveJsonModule",
+    "seed:prod": "node dist/prisma/seed.js",
     "studio": "prisma studio",
     "test": "jest --watchAll --verbose",
     "test:ci": "jest --ci --coverage"
@@ -35,8 +37,12 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^7.0.12",
     "roombnb-backend": "file:",
     "zod": "^3.24.1"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -46,6 +52,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.5",
+    "@types/nodemailer": "^7.0.4",
     "@types/supertest": "^6.0.2",
     "jest": "^29.7.0",
     "prisma": "^6.1.0",

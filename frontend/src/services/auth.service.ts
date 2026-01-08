@@ -46,6 +46,24 @@ export const authService = {
     await api.put('/auth/change-password', data)
   },
 
+  // Upload avatar
+  uploadAvatar: async (file: File): Promise<User> => {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    const response = await api.post<ApiResponse<User>>('/auth/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data.data
+  },
+
+  // Delete avatar
+  deleteAvatar: async (): Promise<User> => {
+    const response = await api.delete<ApiResponse<User>>('/auth/avatar')
+    return response.data.data
+  },
+
   // Logout user (client-side)
   logout: () => {
     localStorage.removeItem('token')

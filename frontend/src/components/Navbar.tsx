@@ -156,6 +156,15 @@ export default function Navbar({ onOpenSearch }: NavbarProps = {}) {
                       >
                         My Listings
                       </Link>
+                      {user?.isHost && (
+                        <Link
+                          to="/host-bookings"
+                          className="block px-4 py-2 hover:bg-gray-50 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          Booking Requests
+                        </Link>
+                      )}
                       <Link
                         to="/profile"
                         className="block px-4 py-2 hover:bg-gray-50 transition"

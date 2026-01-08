@@ -23,12 +23,14 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  properties      Property[]
-  bookingsAsGuest Booking[]  @relation("GuestBookings")
-  reviews         Review[]
-  sentMessages    Message[]  @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
-  favorites       Favorite[]
+  properties           Property[]
+  bookingsAsGuest      Booking[]      @relation("GuestBookings")
+  reviews              Review[]
+  sentMessages         Message[]      @relation("SentMessages")
+  receivedMessages     Message[]      @relation("ReceivedMessages")
+  favorites            Favorite[]
+  hostReviews          GuestReview[]  @relation("HostReviews")
+  guestReviewsReceived GuestReview[]  @relation("GuestReviewsReceived")
 
   @@map("users")
 }
@@ -76,11 +78,12 @@ model Booking {
   updatedAt       DateTime @updatedAt
 
   // Relations
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  guestId    String
-  guest      User     @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
-  review     Review?
+  propertyId  String
+  property    Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  guestId     String
+  guest       User         @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
+  review      Review?
+  guestReview GuestReview?
 
   @@map("bookings")
 }
@@ -130,8 +133,26 @@ model Favorite {
 
   user          User          @relation(fields:[userId], references:[id],onDelete: Cascade)
   property      Property      @relation(fields:[propertyId],references:[id],onDelete:Cascade)
-  
+
 
   @@unique([userId,propertyId])
   @@map("favorites")
+}
+
+model GuestReview {
+  id        String   @id @default(cuid())
+  rating    Int      @default(5)
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  hostId    String
+  host      User     @relation("HostReviews", fields: [hostId], references: [id], onDelete: Cascade)
+  guestId   String
+  guest     User     @relation("GuestReviewsReceived", fields: [guestId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("guest_reviews")
 }

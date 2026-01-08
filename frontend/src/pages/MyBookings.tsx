@@ -1,95 +1,109 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Navbar from '@/components/Navbar'
-import { bookingService } from '@/services'
-import { useAuth } from '@/store'
-import type { Booking } from '@/types'
-import { formatCurrency, formatDateRange, calculateNights } from '@/utils'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import ReviewModal from "@/components/ReviewModal";
+import { bookingService } from "@/services";
+import { useAuth } from "@/store";
+import type { Booking } from "@/types";
+import { formatCurrency, formatDateRange, calculateNights } from "@/utils";
 
-type BookingFilter = 'all' | 'upcoming' | 'past' | 'cancelled'
+type BookingFilter = "all" | "upcoming" | "past" | "cancelled";
 
 export default function MyBookings() {
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<BookingFilter>('all')
-  const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<BookingFilter>("all");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [reviewingBooking, setReviewingBooking] = useState<Booking | null>(
+    null
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
-    fetchBookings()
-  }, [isAuthenticated, navigate])
+    fetchBookings();
+  }, [isAuthenticated, navigate]);
 
   const fetchBookings = async () => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
     try {
-      const data = await bookingService.getGuestBookings()
-      setBookings(data)
+      const data = await bookingService.getGuestBookings();
+      setBookings(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load bookings')
+      setError(err.message || "Failed to load bookings");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
-      return
+    if (!confirm("Are you sure you want to cancel this booking?")) {
+      return;
     }
 
-    setCancellingId(bookingId)
+    setCancellingId(bookingId);
     try {
-      await bookingService.cancelBooking(bookingId)
-      await fetchBookings()
+      await bookingService.cancelBooking(bookingId);
+      await fetchBookings();
     } catch (err: any) {
-      alert(err.message || 'Failed to cancel booking')
+      alert(err.message || "Failed to cancel booking");
     } finally {
-      setCancellingId(null)
+      setCancellingId(null);
     }
-  }
+  };
+
+  const handleReviewSuccess = () => {
+    fetchBookings();
+    setReviewingBooking(null);
+  };
 
   const getStatusBadge = (status: string) => {
-    const styles = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-      completed: 'bg-gray-100 text-gray-800',
-    }
+    const styles: Record<string, string> = {
+      pending: "bg-yellow-100 text-yellow-800",
+      confirmed: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
+      completed: "bg-blue-100 text-blue-800",
+      rejected: "bg-gray-100 text-gray-800",
+    };
 
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${styles[status as keyof typeof styles] || styles.pending}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${
+          styles[status] || styles.pending
+        }`}
+      >
         {status}
       </span>
-    )
-  }
+    );
+  };
 
   const filterBookings = () => {
-    const now = new Date()
+    const now = new Date();
 
     switch (filter) {
-      case 'upcoming':
+      case "upcoming":
         return bookings.filter(
-          (b) => new Date(b.checkIn) > now && b.status !== 'CANCELLED'
-        )
-      case 'past':
+          (b) => new Date(b.checkIn) > now && b.status !== "cancelled" && b.status !== "rejected"
+        );
+      case "past":
         return bookings.filter(
-          (b) => new Date(b.checkOut) < now && b.status !== 'CANCELLED'
-        )
-      case 'cancelled':
-        return bookings.filter((b) => b.status === 'CANCELLED')
+          (b) => new Date(b.checkOut) < now && b.status !== "cancelled" && b.status !== "rejected"
+        );
+      case "cancelled":
+        return bookings.filter((b) => b.status === "cancelled" || b.status === "rejected");
       default:
-        return bookings
+        return bookings;
     }
-  }
+  };
 
-  const filteredBookings = filterBookings()
+  const filteredBookings = filterBookings();
 
   if (isLoading) {
     return (
@@ -99,7 +113,7 @@ export default function MyBookings() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF385C]"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -113,7 +127,7 @@ export default function MyBookings() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -122,24 +136,26 @@ export default function MyBookings() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-2">My Trips</h1>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+            My Trips
+          </h1>
           <p className="text-gray-600">View and manage your bookings</p>
         </div>
 
         <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
           {[
-            { key: 'all', label: 'All Bookings' },
-            { key: 'upcoming', label: 'Upcoming' },
-            { key: 'past', label: 'Past' },
-            { key: 'cancelled', label: 'Cancelled' },
+            { key: "all", label: "All Bookings" },
+            { key: "upcoming", label: "Upcoming" },
+            { key: "past", label: "Past" },
+            { key: "cancelled", label: "Cancelled" },
           ].map((f) => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key as BookingFilter)}
               className={`px-6 py-2 rounded-full font-medium transition whitespace-nowrap ${
                 filter === f.key
-                  ? 'bg-[#FF385C] text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  ? "bg-[#FF385C] text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
               }`}
             >
               {f.label}
@@ -162,14 +178,16 @@ export default function MyBookings() {
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No bookings found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No bookings found
+            </h3>
             <p className="text-gray-600 mb-6">
-              {filter === 'all'
+              {filter === "all"
                 ? "You haven't made any bookings yet"
                 : `No ${filter} bookings`}
             </p>
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="bg-[#FF385C] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#E31C5F] transition"
             >
               Explore Properties
@@ -181,8 +199,8 @@ export default function MyBookings() {
               const nights = calculateNights(
                 booking.checkIn.toString(),
                 booking.checkOut.toString()
-              )
-              const total = booking.totalPrice || 0
+              );
+              const total = booking.totalPrice || 0;
 
               return (
                 <div
@@ -192,10 +210,15 @@ export default function MyBookings() {
                   <div className="flex flex-col md:flex-row">
                     <div className="md:w-64 h-48 md:h-auto flex-shrink-0">
                       <img
-                        src={booking.property?.images[0] || 'https://via.placeholder.com/400'}
-                        alt={booking.property?.title || 'Property'}
+                        src={
+                          booking.property?.images[0] ||
+                          "https://via.placeholder.com/400"
+                        }
+                        alt={booking.property?.title || "Property"}
                         className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => navigate(`/properties/${booking.property?.id}`)}
+                        onClick={() =>
+                          navigate(`/properties/${booking.property?.id}`)
+                        }
                       />
                     </div>
 
@@ -204,12 +227,15 @@ export default function MyBookings() {
                         <div>
                           <h3
                             className="text-xl font-semibold text-gray-900 mb-1 cursor-pointer hover:text-[#FF385C]"
-                            onClick={() => navigate(`/properties/${booking.property?.id}`)}
+                            onClick={() =>
+                              navigate(`/properties/${booking.property?.id}`)
+                            }
                           >
-                            {booking.property?.title || 'N/A'}
+                            {booking.property?.title || "N/A"}
                           </h3>
                           <p className="text-gray-600 text-sm">
-                            {booking.property?.city}, {booking.property?.country}
+                            {booking.property?.city},{" "}
+                            {booking.property?.country}
                           </p>
                         </div>
                         {getStatusBadge(booking.status)}
@@ -217,26 +243,32 @@ export default function MyBookings() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">Check-in / Check-out</p>
+                          <p className="text-sm text-gray-500 mb-1">
+                            Check-in / Check-out
+                          </p>
                           <p className="font-medium text-gray-900">
                             {formatDateRange(
                               booking.checkIn.toString(),
                               booking.checkOut.toString()
                             )}
                           </p>
-                          <p className="text-sm text-gray-600">{nights} nights</p>
+                          <p className="text-sm text-gray-600">
+                            {nights} nights
+                          </p>
                         </div>
 
                         <div>
                           <p className="text-sm text-gray-500 mb-1">Guests</p>
                           <p className="font-medium text-gray-900">
-                            {booking.numberOfGuests}{' '}
-                            {booking.numberOfGuests === 1 ? 'guest' : 'guests'}
+                            {booking.numberOfGuests}{" "}
+                            {booking.numberOfGuests === 1 ? "guest" : "guests"}
                           </p>
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">Total Price</p>
+                          <p className="text-sm text-gray-500 mb-1">
+                            Total Price
+                          </p>
                           <p className="font-semibold text-gray-900 text-lg">
                             {formatCurrency(total)}
                           </p>
@@ -244,37 +276,99 @@ export default function MyBookings() {
 
                         {booking.specialRequests && (
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Special Requests</p>
-                            <p className="text-sm text-gray-700">{booking.specialRequests}</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              Special Requests
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              {booking.specialRequests}
+                            </p>
                           </div>
                         )}
                       </div>
 
-                      {booking.status !== 'CANCELLED' && new Date(booking.checkIn) > new Date() && (
-                        <div className="flex gap-3 pt-4 border-t border-gray-200">
-                          <button
-                            onClick={() => handleCancelBooking(booking.id)}
-                            disabled={cancellingId === booking.id}
-                            className="px-4 py-2 border border-red-500 text-red-500 rounded-lg font-medium hover:bg-red-50 transition disabled:opacity-50"
-                          >
-                            {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
-                          </button>
-                          <button
-                            onClick={() => navigate(`/properties/${booking.property?.id}`)}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
-                          >
-                            View Property
-                          </button>
-                        </div>
-                      )}
+                      {/* Actions for upcoming bookings (pending or confirmed) */}
+                      {(booking.status === "pending" || booking.status === "confirmed") &&
+                        new Date(booking.checkIn) > new Date() && (
+                          <div className="flex gap-3 pt-4 border-t border-gray-200">
+                            <button
+                              onClick={() => handleCancelBooking(booking.id)}
+                              disabled={cancellingId === booking.id}
+                              className="px-4 py-2 border border-red-500 text-red-500 rounded-lg font-medium hover:bg-red-50 transition disabled:opacity-50"
+                            >
+                              {cancellingId === booking.id
+                                ? "Cancelling..."
+                                : "Cancel Booking"}
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate(`/properties/${booking.property?.id}`)
+                              }
+                              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+                            >
+                              View Property
+                            </button>
+                          </div>
+                        )}
+
+                      {/* Actions for completed trips */}
+                      {(booking.status === "confirmed" || booking.status === "completed") &&
+                        new Date(booking.checkOut) < new Date() && (
+                          <div className="flex gap-3 pt-4 border-t border-gray-200">
+                            {!booking.review ? (
+                              <button
+                                onClick={() => setReviewingBooking(booking)}
+                                className="px-4 py-2 bg-[#FF385C] text-white rounded-lg font-medium hover:bg-[#E31C5F] transition"
+                              >
+                                Write Review
+                              </button>
+                            ) : (
+                              <span className="flex items-center gap-2 px-4 py-2 text-green-600 font-medium">
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                Reviewed
+                              </span>
+                            )}
+                            <button
+                              onClick={() =>
+                                navigate(`/properties/${booking.property?.id}`)
+                              }
+                              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+                            >
+                              View Property
+                            </button>
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </main>
+
+      {/* Review Modal */}
+      {reviewingBooking && (
+        <ReviewModal
+          isOpen={!!reviewingBooking}
+          onClose={() => setReviewingBooking(null)}
+          propertyId={
+            reviewingBooking.property?.id || reviewingBooking.propertyId
+          }
+          bookingId={reviewingBooking.id}
+          propertyTitle={reviewingBooking.property?.title || "Property"}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </div>
-  )
+  );
 }

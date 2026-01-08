@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Navbar'
+import AvatarUpload from '@/components/AvatarUpload'
 import { authService } from '@/services'
 import { useAuth } from '@/store'
+import type { User } from '@/types'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -19,7 +21,6 @@ export default function Profile() {
     lastName: '',
     email: '',
     phone: '',
-    avatar: '',
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -40,7 +41,6 @@ export default function Profile() {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        avatar: user.avatar || '',
       })
     }
   }, [isAuthenticated, user, navigate])
@@ -145,10 +145,18 @@ export default function Profile() {
             {!isEditingProfile ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-2xl font-semibold text-white">
-                    {user.firstName.charAt(0)}
-                    {user.lastName.charAt(0)}
-                  </div>
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-2xl font-semibold text-white">
+                      {user.firstName.charAt(0)}
+                      {user.lastName.charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
                       {user.firstName} {user.lastName}
@@ -233,16 +241,16 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Avatar URL
-                  </label>
-                  <input
-                    type="url"
-                    value={profileData.avatar}
-                    onChange={(e) => setProfileData({ ...profileData, avatar: e.target.value })}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FF385C] focus:border-transparent"
+                <div className="md:col-span-2">
+                  <AvatarUpload
+                    currentAvatar={user.avatar}
+                    firstName={user.firstName}
+                    lastName={user.lastName}
+                    onUploadSuccess={(updatedUser: User) => {
+                      updateUser(updatedUser)
+                      setSuccess('Avatar updated successfully')
+                      setTimeout(() => setSuccess(null), 3000)
+                    }}
                   />
                 </div>
 

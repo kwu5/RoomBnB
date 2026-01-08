@@ -59,4 +59,39 @@ export class AuthController {
       next(error);
     }
   }
+
+  async uploadAvatar(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+
+      if (!req.file) {
+        return res.status(400).json({
+          message: 'No file uploaded',
+        });
+      }
+
+      const user = await authService.uploadAvatar(userId, req.file.buffer);
+
+      res.status(200).json({
+        message: 'Avatar uploaded successfully',
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteAvatar(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+      const user = await authService.deleteAvatar(userId);
+
+      res.status(200).json({
+        message: 'Avatar deleted successfully',
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

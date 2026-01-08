@@ -21,7 +21,10 @@ export class PropertyService {
       where.country = { contains: filters.country, mode: 'insensitive' };
     }
     if (filters?.propertyType) {
-      where.propertyType = filters.propertyType;
+      // Convert to Title Case to match database values (e.g., "APARTMENT" -> "Apartment")
+      const titleCase = filters.propertyType.charAt(0).toUpperCase() +
+                        filters.propertyType.slice(1).toLowerCase();
+      where.propertyType = titleCase;
     }
     if (filters?.minPrice || filters?.maxPrice) {
       where.pricePerNight = {};

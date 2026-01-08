@@ -86,7 +86,7 @@ async function main() {
         country: 'USA',
         latitude: 25.7617,
         longitude: -80.1918,
-        amenities: JSON.stringify(['WiFi', 'Pool', 'Beach Access', 'Kitchen', 'Parking', 'Air Conditioning']),
+        amenities: ['WiFi', 'Pool', 'Beach Access', 'Kitchen', 'Parking', 'Air Conditioning'],
         propertyType: 'Villa',
         images: [
           'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800',
@@ -110,7 +110,7 @@ async function main() {
         country: 'USA',
         latitude: 39.1911,
         longitude: -106.8175,
-        amenities: JSON.stringify(['WiFi', 'Fireplace', 'Hot Tub', 'Kitchen', 'Parking', 'Heating']),
+        amenities: ['WiFi', 'Fireplace', 'Hot Tub', 'Kitchen', 'Parking', 'Heating'],
         propertyType: 'Cabin',
         images: [
           'https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800',
@@ -133,7 +133,7 @@ async function main() {
         country: 'USA',
         latitude: 40.7128,
         longitude: -74.0060,
-        amenities: JSON.stringify(['WiFi', 'Gym', 'Elevator', 'Kitchen', 'Workspace', 'Air Conditioning']),
+        amenities: ['WiFi', 'Gym', 'Elevator', 'Kitchen', 'Workspace', 'Air Conditioning'],
         propertyType: 'Apartment',
         images: [
           'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800',
@@ -157,7 +157,7 @@ async function main() {
         country: 'USA',
         latitude: 45.5152,
         longitude: -122.6784,
-        amenities: JSON.stringify(['WiFi', 'Garden', 'Fireplace', 'Kitchen', 'Parking', 'Pet Friendly']),
+        amenities: ['WiFi', 'Garden', 'Fireplace', 'Kitchen', 'Parking', 'Pet Friendly'],
         propertyType: 'House',
         images: [
           'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800',
@@ -168,8 +168,8 @@ async function main() {
     }),
     prisma.property.create({
       data: {
-        title: 'Beachside Bungalow',
-        description: 'Cozy beachside bungalow with stunning sunset views. Steps from the beach with outdoor patio and BBQ.',
+        title: 'Beachside Cottage',
+        description: 'Cozy beachside cottage with stunning sunset views. Steps from the beach with outdoor patio and BBQ.',
         pricePerNight: 280,
         cleaningFee: 60,
         bedrooms: 3,
@@ -180,11 +180,57 @@ async function main() {
         country: 'USA',
         latitude: 32.7157,
         longitude: -117.1611,
-        amenities: JSON.stringify(['WiFi', 'Beach Access', 'BBQ', 'Kitchen', 'Parking', 'Outdoor Seating']),
-        propertyType: 'Bungalow',
+        amenities: ['WiFi', 'Beach Access', 'BBQ', 'Kitchen', 'Parking', 'Outdoor Seating'],
+        propertyType: 'Cottage',
         images: [
           'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800',
           'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+        ],
+        hostId: users[1].id, // Sarah
+      },
+    }),
+    prisma.property.create({
+      data: {
+        title: 'Industrial Artist Loft',
+        description: 'Spacious industrial loft with exposed brick, high ceilings, and artistic vibes. Perfect for creatives and urban explorers.',
+        pricePerNight: 195,
+        cleaningFee: 55,
+        bedrooms: 1,
+        bathrooms: 1,
+        maxGuests: 2,
+        address: '890 Arts District Way',
+        city: 'Los Angeles',
+        country: 'USA',
+        latitude: 34.0407,
+        longitude: -118.2351,
+        amenities: ['WiFi', 'Workspace', 'Kitchen', 'Air Conditioning', 'Elevator', 'Gym'],
+        propertyType: 'Loft',
+        images: [
+          'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800',
+          'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800',
+        ],
+        hostId: users[0].id, // John
+      },
+    }),
+    prisma.property.create({
+      data: {
+        title: 'Historic Brownstone Townhouse',
+        description: 'Elegant 3-story townhouse in a historic neighborhood. Features original hardwood floors, modern amenities, and a private garden.',
+        pricePerNight: 320,
+        cleaningFee: 85,
+        bedrooms: 4,
+        bathrooms: 3,
+        maxGuests: 8,
+        address: '234 Heritage Row',
+        city: 'Boston',
+        country: 'USA',
+        latitude: 42.3601,
+        longitude: -71.0589,
+        amenities: ['WiFi', 'Garden', 'Kitchen', 'Heating', 'Washer', 'Parking'],
+        propertyType: 'Townhouse',
+        images: [
+          'https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=800',
+          'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=800',
         ],
         hostId: users[1].id, // Sarah
       },

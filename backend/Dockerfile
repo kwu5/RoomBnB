@@ -38,6 +38,9 @@ RUN npx prisma generate
 # Build TypeScript
 RUN npm run build
 
+# Build seed script separately (prisma/ is outside src/)
+RUN npm run seed:build
+
 # Production stage
 FROM base AS production
 WORKDIR /app

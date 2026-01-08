@@ -34,6 +34,22 @@ export const bookingService = {
     return response.data.data
   },
 
+  // Confirm booking (host only)
+  confirmBooking: async (id: string): Promise<Booking> => {
+    const response = await api.put<ApiResponse<Booking>>(
+      `/bookings/${id}/confirm`
+    )
+    return response.data.data
+  },
+
+  // Reject booking (host only)
+  rejectBooking: async (id: string): Promise<Booking> => {
+    const response = await api.put<ApiResponse<Booking>>(
+      `/bookings/${id}/reject`
+    )
+    return response.data.data
+  },
+
   // Check availability for a property
   checkAvailability: async (
     propertyId: string,
